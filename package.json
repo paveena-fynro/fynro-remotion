@@ -1,0 +1,22 @@
+{
+  "name": "fynro-remotion",
+  "version": "1.0.0",
+  "description": "Fynro Financial Plan AI Video — Remotion Overlay",
+  "scripts": {
+    "start": "remotion studio",
+    "build": "remotion bundle",
+    "render": "remotion render FinancialOverlay out/overlay.webm --codec=vp8",
+    "deploy": "remotion lambda sites create --site-name=fynro-overlay && remotion lambda functions deploy"
+  },
+  "dependencies": {
+    "@remotion/lambda": "^4.0.0",
+    "express": "^5.2.1",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "remotion": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "typescript": "^5.0.0"
+  }
+}
