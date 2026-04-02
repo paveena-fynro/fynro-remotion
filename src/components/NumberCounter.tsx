@@ -5,7 +5,8 @@ type Props = { label: string; value: number; prefix?: string; x: number; y: numb
 
 export const NumberCounter: React.FC<Props> = ({ label, value, prefix = "", x, y, color }) => {
   const frame = useCurrentFrame();
-  const display = Math.round(interpolate(frame, [0, 60], [0, value], { extrapolateRight: "clamp" }));
+  const safeValue = value || 0;
+  const display = Math.round(interpolate(frame, [0, 60], [0, safeValue], { extrapolateRight: "clamp" }));
   const formatted = prefix + (display >= 10000000 ? `${(display/10000000).toFixed(1)}Cr` :
     display >= 100000 ? `${(display/100000).toFixed(1)}L` : display.toLocaleString("en-IN"));
   const opacity = interpolate(frame, [0, 15], [0, 1], { extrapolateRight: "clamp" });
@@ -15,8 +16,7 @@ export const NumberCounter: React.FC<Props> = ({ label, value, prefix = "", x, y
       position: "absolute", left: x, top: y, opacity,
       background: "rgba(0,0,0,0.85)",
       border: `2px solid ${color}`,
-      borderRadius: 8, padding: "6px 14px",
-      backdropFilter: "blur(4px)"
+      borderRadius: 8, padding: "6px 14px"
     }}>
       <div style={{ color: "#AAAAAA", fontSize: 10, fontWeight: 600, letterSpacing: 2, textTransform: "uppercase" }}>
         {label}
