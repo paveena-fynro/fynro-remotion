@@ -33,11 +33,11 @@ app.post('/render', (req, res) => {
         outputFile,
         '--codec=h264',
         '--image-format=jpeg',
-        '--frames=0-899',
+        '--frames=0-449',
         
         `--props="${propsFile}"`,
         '--log=error',
-        '--concurrency=1',
+        '--concurrency=1', '--scale=0.56',
         '--browser-executable=/usr/bin/chromium',
         '--chromium-flags="--no-sandbox --disable-dev-shm-usage --disable-gpu --single-process --no-zygote"'
       ].join(' ');
