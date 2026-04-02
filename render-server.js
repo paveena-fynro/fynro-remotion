@@ -23,32 +23,29 @@ app.post('/render', (req, res) => {
       const propsFile = `/tmp/${renderId}_props.json`;
       fs.writeFileSync(propsFile, JSON.stringify(inputProps));
 
-      // Full duration, full quality - runs on Mac with 8GB RAM
       const cmd = [
         'npx remotion render', composition, outputFile,
         '--codec=h264',
         '--image-format=jpeg',
+        '--frames=0-899',
         `--props="${propsFile}"`,
         '--log=error',
-        '--concurrency=1'
+        '--concurrency=1',
+        '--browser-executable=/usr/bin/chromium',
+        '--chromium-flags="--no-sandbox --disable-dev-shm-usage --disable-gpu --single-process --no-zygote"'
       ].join(' ');
 
-      console.log(`🎬 Rendering ${renderId}...`);
+      console.log('Rendering:', cmd);
       execSync(cmd, { cwd: __dirname, timeout: 600000, stdio: 'pipe' });
 
-      // Upload to 0x0.st - free public URL, no account needed
-      console.log(`📤 Uploading ${renderId}...`);
-      const uploadResult = execSync(`curl -s -F "file=@${outputFile}" https://file.io --max-time 120`).toString().trim();
-      const uploadJson = JSON.parse(uploadResult);
-      const publicUrl = uploadJson.link || uploadJson.url || uploadResult;
-
+      const baseUrl = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
       jobs[renderId].status = 'completed';
-      jobs[renderId].outputUrl = publicUrl;
-      console.log(`✅ Done: ${publicUrl}`);
+      jobs[renderId].outputUrl = `${baseUrl}/output/${renderId}.mp4`;
+      console.log('Done:', renderId);
     } catch (err) {
-      console.error(`❌ Error: ${err.message.substring(0, 300)}`);
       jobs[renderId].status = 'error';
       jobs[renderId].error = err.message.substring(0, 500);
+      console.error('Error:', err.message.substring(0, 200));
     }
   });
 });
@@ -57,6 +54,12 @@ app.get('/status/:id', (req, res) => {
   const job = jobs[req.params.id];
   if (!job) return res.status(404).json({ error: 'Not found' });
   res.json({ status: job.status, outputUrl: job.outputUrl, error: job.error, startedAt: job.startedAt });
+});
+
+app.get('/output/:filename', (req, res) => {
+  const file = `/tmp/${req.params.filename}`;
+  if (!fs.existsSync(file)) return res.status(404).json({ error: 'Not found' });
+  res.sendFile(file);
 });
 
 app.listen(PORT, () => console.log(`🚀 Fynro Remotion Render Server on port ${PORT}`));
