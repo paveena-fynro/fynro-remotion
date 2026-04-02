@@ -41,7 +41,7 @@ app.post('/render', async (req, res) => {
         '--image-format=jpeg',   // jpeg instead of png - much faster
         `--props="${propsFile}"`,
         '--log=error',
-        '--concurrency=1 --browser-executable=/usr/bin/chromium'
+        '--concurrency=1 --browser-executable=/usr/bin/chromium --chromium-flags="--no-sandbox --disable-dev-shm-usage --disable-gpu"'
       ].join(' ');
 
       execSync(cmd, {
