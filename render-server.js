@@ -33,8 +33,8 @@ app.post('/render', (req, res) => {
         outputFile,
         '--codec=h264',
         '--image-format=jpeg',
-        '--frames=0-1799',
-        '--scale=0.5',
+        '--frames=0-899',
+        
         `--props="${propsFile}"`,
         '--log=error',
         '--concurrency=1',
