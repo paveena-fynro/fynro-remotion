@@ -1,81 +1,49 @@
 import React from "react";
-import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, useCurrentFrame, interpolate, spring, useVideoConfig } from "remotion";
 
-type Props = {
-  age: number;
-  label: string;
-  amount: string;
-  type: "milestone" | "goal" | "warning";
-  index: number;
-};
+type Props = { age: number; label: string; amount: string | null; type: string; index: number };
 
-const TYPE_COLORS = {
-  milestone: { border: "#F59E0B", text: "#F59E0B", bg: "rgba(245,158,11,0.12)" },
-  goal:      { border: "#60A5FA", text: "#60A5FA", bg: "rgba(96,165,250,0.12)" },
-  warning:   { border: "#F87171", text: "#F87171", bg: "rgba(248,113,113,0.12)" },
-};
-
-const TYPE_ICONS = {
-  milestone: "🎯",
-  goal: "🏁",
-  warning: "⚠️",
+const TYPE_COLORS: Record<string, string> = {
+  milestone: "#F59E0B",
+  goal: "#4ADE80",
+  retirement: "#60A5FA",
+  withdrawal: "#F87171",
+  lifestyle: "#C084FC",
 };
 
 export const MilestoneCard: React.FC<Props> = ({ age, label, amount, type, index }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const { border, text, bg } = TYPE_COLORS[type] || TYPE_COLORS.milestone;
+  const color = TYPE_COLORS[type] || "#F59E0B";
+  const scale = spring({ frame, fps, config: { damping: 10 } });
+  const opacity = interpolate(frame, [0, 10], [0, 1]);
 
-  // Slide in from right
-  const slideX = interpolate(frame, [0, 18], [120, 0], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-  const opacity = interpolate(frame, [0, 12], [0, 1], { extrapolateRight: "clamp" });
-  const scale = spring({ fps, frame, config: { damping: 14, stiffness: 180 } });
-
-  // Stack cards vertically, offset by index
-  const bottomPos = 180 + index * 0;
+  const positions = [
+    { bottom: 200, left: 40 }, { bottom: 200, left: 280 },
+    { bottom: 200, left: 520 }, { bottom: 120, left: 40 },
+    { bottom: 120, left: 280 }, { bottom: 120, left: 520 },
+  ];
+  const pos = positions[index % positions.length];
 
   return (
     <AbsoluteFill>
       <div style={{
-        position: "absolute",
-        bottom: 180,
-        left: 40,
-        transform: `translateX(${slideX}px) scale(${Math.min(scale, 1)})`,
-        opacity,
-        background: bg,
-        border: `1.5px solid ${border}`,
-        borderRadius: 12,
-        padding: "10px 16px",
-        minWidth: 240,
-        backdropFilter: "blur(10px)",
-        boxShadow: `0 4px 24px rgba(0,0,0,0.4)`,
+        position: "absolute", ...pos,
+        opacity, transform: `scale(${scale})`,
+        background: "rgba(0,0,0,0.88)",
+        border: `2px solid ${color}`,
+        borderRadius: 10, padding: "10px 16px", width: 210,
+        backdropFilter: "blur(8px)"
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 18 }}>{TYPE_ICONS[type]}</span>
-          <div>
-            <div style={{
-              color: "rgba(255,255,255,0.55)", fontSize: 10,
-              fontFamily: "sans-serif", letterSpacing: 1.2, marginBottom: 2
-            }}>
-              AGE {age}
-            </div>
-            <div style={{
-              color: "#fff", fontSize: 14, fontWeight: 600,
-              fontFamily: "sans-serif", lineHeight: 1.2
-            }}>
-              {label}
-            </div>
-            <div style={{
-              color: text, fontSize: 18, fontWeight: 700,
-              fontFamily: "sans-serif", marginTop: 2
-            }}>
-              {amount}
-            </div>
-          </div>
+        <div style={{ color, fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase" }}>
+          Age {age}
         </div>
+        <div style={{ color: "#FFFFFF", fontSize: 15, fontWeight: 700, margin: "4px 0 2px" }}>
+          {label}
+        </div>
+        {amount && (
+          <div style={{ color, fontSize: 18, fontWeight: 800 }}>{amount}</div>
+        )}
       </div>
     </AbsoluteFill>
   );

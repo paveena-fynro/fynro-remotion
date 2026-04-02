@@ -1,74 +1,30 @@
 import React from "react";
-import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, useCurrentFrame, interpolate, spring, useVideoConfig } from "remotion";
 
-type Props = {
-  num: number;
-  title: string;
-};
-
-const CHAPTER_COLORS = ["#60A5FA", "#4ADE80", "#F59E0B"];
+type Props = { num: number; title: string };
 
 export const ChapterTitle: React.FC<Props> = ({ num, title }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const { durationInFrames } = { durationInFrames: 90 };
-
-  const color = CHAPTER_COLORS[(num - 1) % CHAPTER_COLORS.length];
-
-  // Slide in from bottom-left
-  const slideX = interpolate(frame, [0, 16], [-80, 0], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-
-  // Fade out near end of sequence
-  const fadeOut = interpolate(frame, [60, 88], [1, 0], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-
-  const opacity = interpolate(frame, [0, 10], [0, fadeOut], {
-    extrapolateRight: "clamp",
-  });
+  const colors = ["#60A5FA", "#4ADE80", "#F59E0B"];
+  const color = colors[(num - 1) % 3];
+  const scale = spring({ frame, fps, config: { damping: 12 } });
+  const opacity = interpolate(frame, [0, 15], [0, 1]);
 
   return (
     <AbsoluteFill>
       <div style={{
-        position: "absolute",
-        bottom: 30,
-        left: 30,
-        transform: `translateX(${slideX}px)`,
-        opacity: Math.min(opacity, fadeOut),
-        display: "flex",
-        alignItems: "center",
-        gap: 10,
+        position: "absolute", bottom: 80, left: 40,
+        opacity, transform: `scale(${scale})`,
+        background: "rgba(0,0,0,0.85)",
+        border: `3px solid ${color}`,
+        borderRadius: 12, padding: "14px 24px",
+        backdropFilter: "blur(8px)"
       }}>
-        {/* Chapter number pill */}
-        <div style={{
-          background: color,
-          borderRadius: 6,
-          padding: "3px 10px",
-          fontSize: 11,
-          fontWeight: 700,
-          fontFamily: "sans-serif",
-          color: "rgba(0,0,0,0.85)",
-          letterSpacing: 0.8,
-          whiteSpace: "nowrap",
-        }}>
-          CH {num}
+        <div style={{ color, fontSize: 13, fontWeight: 700, letterSpacing: 3, textTransform: "uppercase", marginBottom: 4 }}>
+          Chapter {num}
         </div>
-
-        {/* Title with bottom-border accent */}
-        <div style={{
-          color: "#fff",
-          fontSize: 15,
-          fontWeight: 600,
-          fontFamily: "sans-serif",
-          borderBottom: `2px solid ${color}`,
-          paddingBottom: 2,
-          maxWidth: 360,
-          lineHeight: 1.3,
-        }}>
+        <div style={{ color: "#FFFFFF", fontSize: 22, fontWeight: 800, lineHeight: 1.2, maxWidth: 500 }}>
           {title}
         </div>
       </div>
